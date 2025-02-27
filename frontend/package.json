@@ -1,0 +1,10 @@
+{
+  "name": "frontend",
+  "scripts": {
+    "start": "serve src -p 3002",
+    "dev": "serve src -p 3002"
+  },
+  "dependencies": {
+    "serve": "^14.0.0"
+  }
+} 

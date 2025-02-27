@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/styles/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <h2>Dashboard</h2>
+        <div id="user-info"></div>
+        <button onclick="handleLogout()">Sair</button>
+    </div>
+    <script>
+        // Verificar se o usuário está autenticado
+        async function checkAuth() {
+            try {
+                const response = await fetch('http://localhost:3001/api/auth/check', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                const user = await response.json();
+                document.getElementById('user-info').innerHTML = `
+                    <p>Bem-vindo, ${user.username}!</p>
+                `;
+            } catch (error) {
+                console.error('Erro:', error);
+                window.location.href = '/login.html';
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                await fetch('http://localhost:3001/api/auth/logout', {
+                    credentials: 'include'
+                });
+                window.location.href = '/login.html';
+            } catch (error) {
+                console.error('Erro ao fazer logout:', error);
+            }
+        }
+
+        // Verificar autenticação ao carregar a página
+        checkAuth();
+    </script>
+</body>
+</html> 

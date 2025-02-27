@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Pacote - Viagens Incríveis</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav-container">
+            <h1>Viagens Incríveis</h1>
+            <div class="nav-links">
+                <a href="/">Voltar</a>
+                <button id="logoutBtn" onclick="window.handleLogout()">Sair</button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div id="package-details" class="package-details">
+            <!-- Detalhes do pacote serão inseridos aqui via JavaScript -->
+        </div>
+
+        <div class="booking-section">
+            <h3>Fazer Reserva</h3>
+            <div class="form-group">
+                <label for="quantity">Quantidade de pessoas:</label>
+                <input type="number" id="quantity" min="1" value="1">
+            </div>
+            <div class="total-price">
+                Total: <span id="total">R$ 0,00</span>
+            </div>
+            <button id="bookBtn" class="btn-primary">Reservar</button>
+        </div>
+    </main>
+
+    <script src="/js/auth.js" type="module"></script>
+    <script src="/js/package-details.js" type="module"></script>
+    <script type="module">
+        import { handleLogout } from '/js/auth.js';
+        window.handleLogout = handleLogout;
+    </script>
+</body>
+</html>
