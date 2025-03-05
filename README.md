@@ -25,6 +25,7 @@ Este projeto é uma aplicação web fullstack que permite aos usuários visualiz
 
 ## 🏗️ Estrutura do Projeto
 
+```text
 ├── backend/
 │ ├── src/
 │ │ ├── config/ # Configurações (banco de dados, variáveis de ambiente)
@@ -40,6 +41,7 @@ Este projeto é uma aplicação web fullstack que permite aos usuários visualiz
 ├── styles/ # Arquivos CSS
 ├── pages/ # Páginas HTML
 └── images/ # Imagens e recursos estáticos
+````
 
 ## ⚙️ Requisitos
 
