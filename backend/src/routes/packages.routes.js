@@ -15,6 +15,14 @@ const isAdmin = (req, res, next) => {
 // Rotas públicas
 router.get('/', packagesController.getAllPackages);
 
+// Rota específica para o painel de administração
+router.get('/admin/dashboard', isAuthenticated, isAdmin, (req, res) => {
+    res.json({ 
+        message: 'Painel de administração', 
+        user: req.session.user 
+    });
+});
+
 // Rotas que requerem autenticação
 router.get('/:id', isAuthenticated, packagesController.getPackageById);
 

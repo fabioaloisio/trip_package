@@ -24,12 +24,51 @@ const isAdmin = (req, res, next) => {
  */
 router.get('/', async (req, res) => {
     try {
+        // Se o usuário for admin, retorna todos os pacotes com detalhes completos
+        if (req.session && req.session.user && req.session.user.role === 'admin') {
+            const packages = await Package.findAllForAdmin();
+            return res.json(packages);
+        }
+        
+        // Para usuários normais, retorna apenas informações públicas
         const packages = await Package.findAllPublic();
         res.json(packages);
     } catch (error) {
         console.error('Erro ao listar pacotes:', error);
         console.error('Stack:', error.stack);
         res.status(500).json({ error: 'Erro ao listar pacotes' });
+    }
+});
+
+/**
+ * Painel de administração
+ * @route GET /api/packages/admin/dashboard
+ */
+router.get('/admin/dashboard', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+        // Busca estatísticas para o painel
+        const [
+            packages,
+            bookingsCount,
+            totalRevenue
+        ] = await Promise.all([
+            Package.findAllForAdmin(),
+            pool.execute('SELECT COUNT(*) as count FROM bookings').then(([rows]) => rows[0].count),
+            pool.execute('SELECT SUM(total_price) as total FROM bookings').then(([rows]) => rows[0].total || 0)
+        ]);
+        
+        res.json({
+            success: true,
+            stats: {
+                totalPackages: packages.length,
+                totalBookings: bookingsCount,
+                totalRevenue: totalRevenue
+            },
+            packages: packages
+        });
+    } catch (error) {
+        console.error('Erro ao carregar painel de administração:', error);
+        res.status(500).json({ error: 'Erro ao carregar painel de administração' });
     }
 });
 

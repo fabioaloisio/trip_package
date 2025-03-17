@@ -7,6 +7,13 @@ import Package from '../models/Package.js';
  */
 export const getAllPackages = async (req, res) => {
   try {
+    // Se o usuário for admin, retorna todos os pacotes com detalhes completos
+    if (req.session && req.session.user && req.session.user.role === 'admin') {
+      const packages = await Package.findAllForAdmin();
+      return res.json(packages);
+    }
+    
+    // Para usuários normais, retorna apenas informações públicas
     const packages = await Package.findAllPublic();
     res.json(packages);
   } catch (error) {

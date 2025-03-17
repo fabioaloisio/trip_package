@@ -24,26 +24,27 @@ export class User {
      * @param {Object} userData - Dados do usuário
      * @returns {Promise<Object>} Usuário criado
      */
-    static async create({ username, email, password }) {
+    static async create({ username, email, password, role = 'user' }) {
         // Validar dados
         if (!username || !email || !password) {
             throw new Error('Dados inválidos');
         }
-        
-        console.log('Tentando criar usuário:', { username, email });
+    
+        console.log('Tentando criar usuário:', { username, email, role });
         const hashedPassword = await bcrypt.hash(password, 10);
-        
+    
         try {
             const [result] = await pool.execute(
-                'INSERT INTO users (username, email, password, created_at) VALUES (?, ?, ?, NOW())',
-                [username, email, hashedPassword]
+                'INSERT INTO users (username, email, password, role, created_at) VALUES (?, ?, ?, ?, NOW())',
+                [username, email, hashedPassword, role]
             );
-            
+        
             console.log('Usuário criado com sucesso:', result.insertId);
             return {
                 id: result.insertId,
                 username,
-                email
+                email,
+                role
             };
         } catch (error) {
             console.error('Erro detalhado ao criar usuário:', {

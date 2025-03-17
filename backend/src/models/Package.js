@@ -68,6 +68,18 @@ export class Package {
         `);
         return rows;
     }
+    
+    /**
+     * Busca todos os pacotes (incluindo passados) - para administradores
+     * @returns {Promise<Array>} Lista completa de pacotes
+     */
+    static async findAllForAdmin() {
+        const [rows] = await pool.execute(`
+            SELECT * FROM packages 
+            ORDER BY departure_date DESC
+        `);
+        return rows;
+    }
 
     /**
      * Busca um pacote pelo ID
