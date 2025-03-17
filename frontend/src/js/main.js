@@ -6,9 +6,10 @@ import { checkAuth } from './auth.js';
 
 // Elementos do DOM
 const packagesGrid = document.getElementById('packages-grid');
-const loginLink = document.getElementById('loginLink');
-const dashboardLink = document.getElementById('dashboardLink');
-const logoutBtn = document.getElementById('logoutBtn');
+const loginLink = document.getElementById('login-link');
+const dashboardLink = document.getElementById('dashboard-link');
+const adminLink = document.getElementById('admin-link');
+const logoutBtn = document.getElementById('logout-btn');
 
 /**
  * Formata o preço em reais
@@ -92,11 +93,17 @@ async function loadPackages() {
 /**
  * Atualiza a visibilidade dos links de navegação
  * @param {boolean} isAuthenticated - Se o usuário está autenticado
+ * @param {boolean} isAdmin - Se o usuário é administrador
  */
-function updateNavLinks(isAuthenticated) {
-    loginLink.style.display = isAuthenticated ? 'none' : 'block';
-    dashboardLink.style.display = isAuthenticated ? 'block' : 'none';
-    logoutBtn.style.display = isAuthenticated ? 'block' : 'none';
+function updateNavLinks(isAuthenticated, isAdmin = false) {
+    if (loginLink) loginLink.style.display = isAuthenticated ? 'none' : 'block';
+    if (dashboardLink) dashboardLink.style.display = isAuthenticated ? 'block' : 'none';
+    if (logoutBtn) logoutBtn.style.display = isAuthenticated ? 'block' : 'none';
+    
+    // Adicionar link para o painel administrativo se o usuário for admin
+    if (adminLink) {
+        adminLink.style.display = isAdmin ? 'block' : 'none';
+    }
 }
 
 /**
@@ -118,11 +125,29 @@ async function handleViewDetails(packageId) {
 // Inicialização
 document.addEventListener('DOMContentLoaded', async () => {
     // Verifica autenticação
-    const isAuthenticated = await checkAuth();
-    updateNavLinks(isAuthenticated);
+    const authResult = await checkAuth();
+    const isAuthenticated = authResult.isAuthenticated || false;
+    const isAdmin = authResult.isAdmin || false;
+    
+    updateNavLinks(isAuthenticated, isAdmin);
     
     // Carrega os pacotes
     loadPackages();
+    
+    // Adicionar event listener para o botão de logout
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                window.location.href = '/login.html';
+            } catch (error) {
+                console.error('Erro ao fazer logout:', error);
+            }
+        });
+    }
 });
 
 // Tornar a função disponível globalmente
