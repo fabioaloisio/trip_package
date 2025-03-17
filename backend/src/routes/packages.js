@@ -10,6 +10,14 @@ import { isAuthenticated } from '../middleware/auth.js';
 
 const router = Router();
 
+// Middleware para verificar se o usuário é administrador
+const isAdmin = (req, res, next) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Acesso negado. Apenas administradores podem realizar esta operação.' });
+    }
+    next();
+};
+
 /**
  * Lista todos os pacotes
  * @route GET /api/packages
@@ -88,4 +96,112 @@ router.post('/:id/book', isAuthenticated, async (req, res) => {
     }
 });
 
-export default router; 
+/**
+ * Cria um novo pacote (apenas admin)
+ * @route POST /api/packages
+ */
+router.post('/', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+        const { 
+            name, description, destination, image_url, 
+            departure_date, duration, price, available_seats 
+        } = req.body;
+        
+        // Validação básica
+        if (!name || !destination || !departure_date || !price || !available_seats) {
+            return res.status(400).json({ 
+                error: 'Dados incompletos. Todos os campos obrigatórios devem ser preenchidos.' 
+            });
+        }
+        
+        const newPackage = await Package.create({
+            name, 
+            description, 
+            destination, 
+            image_url, 
+            departure_date, 
+            duration, 
+            price, 
+            available_seats
+        });
+        
+        res.status(201).json({
+            success: true,
+            package: newPackage
+        });
+    } catch (error) {
+        console.error('Erro ao criar pacote:', error);
+        res.status(500).json({ error: 'Erro ao criar pacote' });
+    }
+});
+
+/**
+ * Atualiza um pacote existente (apenas admin)
+ * @route PUT /api/packages/:id
+ */
+router.put('/:id', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+        const packageId = req.params.id;
+        
+        // Verifica se o pacote existe
+        const existingPackage = await Package.findById(packageId);
+        if (!existingPackage) {
+            return res.status(404).json({ error: 'Pacote não encontrado' });
+        }
+        
+        // Atualiza o pacote
+        const success = await Package.update(packageId, req.body);
+        
+        if (success) {
+            // Busca o pacote atualizado
+            const updatedPackage = await Package.findById(packageId);
+            res.json({
+                success: true,
+                package: updatedPackage
+            });
+        } else {
+            res.status(400).json({ error: 'Não foi possível atualizar o pacote' });
+        }
+    } catch (error) {
+        console.error('Erro ao atualizar pacote:', error);
+        res.status(500).json({ error: 'Erro ao atualizar pacote' });
+    }
+});
+
+/**
+ * Exclui um pacote (apenas admin)
+ * @route DELETE /api/packages/:id
+ */
+router.delete('/:id', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+        const packageId = req.params.id;
+        
+        // Verifica se o pacote existe
+        const existingPackage = await Package.findById(packageId);
+        if (!existingPackage) {
+            return res.status(404).json({ error: 'Pacote não encontrado' });
+        }
+        
+        // Tenta excluir o pacote
+        try {
+            const success = await Package.delete(packageId);
+            if (success) {
+                res.json({ success: true, message: 'Pacote excluído com sucesso' });
+            } else {
+                res.status(400).json({ error: 'Não foi possível excluir o pacote' });
+            }
+        } catch (error) {
+            if (error.message.includes('possui reservas')) {
+                return res.status(400).json({ 
+                    error: 'Não é possível excluir um pacote que possui reservas' 
+                });
+            }
+            throw error;
+        }
+    } catch (error) {
+        console.error('Erro ao excluir pacote:', error);
+        res.status(500).json({ error: 'Erro ao excluir pacote' });
+    }
+});
+
+export default router;
